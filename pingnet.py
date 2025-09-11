@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-# interactive_stress_test.py
+
 import requests
 import time
 
 def main():
-    url = input("ใส่ลิงก์เว็บที่ต้องการทดสอบ (เช่น http://127.0.0.1:8000): ").strip()
+    url = input("(pingnet web --> http://127.0.0.1:8000): ").strip()
     total_requests = int(input("ต้องการยิงกี่ครั้ง: ").strip())
 
     success = 0
     fail = 0
     start = time.time()
 
-    print(f"\nเริ่มยิงเว็บ {url} ทั้งหมด {total_requests} ครั้ง...\n")
+    print(f"\n start ping {url} all {total_requests} rool...\n")
 
     for i in range(total_requests):
         try:
