@@ -1,0 +1,69 @@
+sudo apt install mosquitto mosquitto-clients -y
+sudo systemctl enable mosquitto
+sudo systemctl restart mosquitto
+mosquitto_sub -h localhost -t "test/topic"
+mosquitto_pub -h localhost -t "test/topic" -m "Hello MQTT"
+
+sudo mosquitto_passwd -c /etc/mosquitto/passwd cpe406
+sudo nano /etc/mosquitto/conf.d/default.conf
+listener 1883
+allow_anonymous false
+password_file /etc/mosquitto/passwd
+log_dest syslog
+
+sudo chown mosquitto: /etc/mosquitto/passwd
+sudo chmod 640 /etc/mosquitto/passwd
+mosquitto -c /etc/mosquitto/mosquitto.conf -v
+journalctl -u mosquitto -f
+
+mosquitto_sub -h localhost -t "lab/test" -u "cpe406" -P "cpe406"
+mosquitto_pub -h localhost -t "lab/test" -m "Hello Secure MQTT" -u "cpe406" -P "cpe406"
+
+journalctl -u mosquitto -f
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+
+sudo apt install -y nodejs
+bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
+node-red-start
+node-red-stop
+node-red-restart
+node-red-log
+
+node-red-start
+http://127.0.0.1:1880 หรือ  http://<ip-address>:1880
+sudo systemctl enable nodered
+
+sudo npm install -g --unsafe-perm node-red-admin
+node-red-admin hash-pw
+nano -l ~/.node-red/settings.js
+
+adminAuth: {
+    type: "credentials",
+    users: [{
+        username: "admin",
+        password: "<รหัสผ่านที่เข้ารหัสแล้ว>",
+        permissions: "*"
+    }]
+},
+
+sudo systemctl restart nodered
+Username: admin
+Password: cpe406
+
+adminAuth: {
+    type: "credentials",
+    users: [
+        {
+            username: "cpe406",
+            password: "<hash ของ cpe406>",
+            permissions: "*"
+        },
+        {
+            username: "viewer",
+            password: "<hash ของ viewer>",
+            permissions: "read"
+        }
+    ]
+}
+
+
