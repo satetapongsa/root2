@@ -1,0 +1,72 @@
+sudo apt update
+sudo apt install apache2 php libapache2-mod-php mariadb-server -y
+
+cd /var/www/html/
+sudo mkdir iotdashboard
+sudo chown $USER:$USER iotdashboard
+cd iotdashboard
+
+<?php
+// สุ่มค่า sensor (จำลองการอ่านจาก hardware จริง)
+function getRandomSensorData() {
+    $sensors = ["temperature", "humidity", "motion"];
+    $sensor = $sensors[array_rand($sensors)];
+    $value = 0;
+    if ($sensor == "temperature") $value = rand(20,35);  // °C
+    if ($sensor == "humidity") $value = rand(40,80);    // %
+    if ($sensor == "motion") $value = rand(0,1);        // 0/1
+    return ["sensor" => $sensor, "value" => $value];
+}
+
+// เริ่ม array เก็บค่าล่าสุด (session)
+session_start();
+if (!isset($_SESSION['data'])) {
+    $_SESSION['data'] = [];
+}
+$new = getRandomSensorData();
+$_SESSION['data'][] = ["time" => date("H:i:s"), "sensor" => $new["sensor"], "value" => $new["value"]];
+if (count($_SESSION['data']) > 10) array_shift($_SESSION['data']);
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IoT Dashboard (Ubuntu Demo)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h2 class="text-center">📊 IoT Dashboard (Random Sensor)</h2>
+    <canvas id="lineChart" height="100"></canvas>
+    <h4 class="mt-4">Latest Value:</h4>
+    <p><b>Sensor:</b> <?= $new["sensor"] ?> | <b>Value:</b> <?= $new["value"] ?> | <b>Time:</b> <?= date("H:i:s") ?></p>
+    <div class="text-center">
+      <a href="dashboard.php" class="btn btn-primary mt-3">Refresh Data 🔄</a>
+    </div>
+  </div>
+</div>
+<script>
+const ctx = document.getElementById("lineChart").getContext("2d");
+new Chart(ctx, {
+  type: "line",
+  data: {
+    labels: <?= json_encode(array_column($_SESSION['data'], 'time')) ?>,
+    datasets: [{
+      label: "Sensor Values",
+      data: <?= json_encode(array_column($_SESSION['data'], 'value')) ?>,
+      borderColor: "rgba(75,192,192,1)",
+      fill: false,
+      tension: 0.2
+    }]
+  },
+  options: {scales:{y:{beginAtZero:true}}}
+});
+</script>
+</body>
+</html>
+
+http://localhost/iotdashboard/dashboard.php
+
+
