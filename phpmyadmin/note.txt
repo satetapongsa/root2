@@ -70,3 +70,16 @@ new Chart(ctx, {
 http://localhost/iotdashboard/dashboard.php
 
 
+http://localhost/random_temp.php
+sudo apt update
+sudo apt install nginx php-fpm php-mysql mysql-server phpmyadmin
+http://localhost
+sudo nano /etc/nginx/sites-available/default
+echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/info.php
+http://localhost/info.php
+http://localhost/phpmyadmin
+
+sudo ln -s /usr/share/phpmyadmin /var/www/html/phpmyadmin
+
+
+
