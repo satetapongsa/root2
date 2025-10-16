@@ -15,3 +15,5 @@ node.status({fill:"green",shape:"dot",text:`T:${temperature}°C H:${humidity}% L
 
 msg.payload = data;
 return msg;
+
+msg.payload.temperature
