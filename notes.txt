@@ -1,222 +1,35 @@
-Trigger Every 1 Min
-Generate Random Data
-let temperature = (Math.random() * 10 + 25).toFixed(2); // 25-35 °C
-let humidity = (Math.random() * 40 + 40).toFixed(2);    // 40-80 %
-let light = (Math.random() * 500 + 300).toFixed(2);      // 300-800 lx
+sudo groupadd devops
+sudo usermod -aG devops w
+sudo usermod -aG devops student
+getent group devops
+devops:x:1002:w,student
+sudo mkdir -p /srv/team
+sudo chown :devops /srv/team
+sudo chmod 775 /srv/team
+ls -ld /srv/team
+drwxrwxr-x 2 root devops 4096 Oct 17 10:00 /srv/team
+sudo chmod g+s /srv/team
+ls -ld /srv/team
+drwxrwsr-x 2 root devops 4096 Oct 17 10:05 /srv/team
+umask 002
+newgrp devops
 
-let data = {
-    temperature: Number(temperature),
-    humidity: Number(humidity),
-    light: Number(light),
-    timestamp: new Date().toISOString()
-};
+cd /srv/team
+newgrp devops
+echo "file from w" > file_w.txt
 
-node.status({fill:"green",shape:"dot",text:`T:${temperature}°C H:${humidity}% L:${light}lx`});
+cd /srv/team
+newgrp devops
+echo "file from student" > file_student.txt
 
-msg.payload = data;
-return msg;
+ls -l /srv/team
+-rw-rw-r-- 1 w        devops  12 Oct 17 10:10 file_w.txt
+-rw-rw-r-- 1 student  devops  17 Oct 17 10:10 file_student.txt
 
-msg.payload.temperature
+echo "student edited w" >> file_w.txt
+echo "w edited student" >> file_student.txt
 
-[{
-    "id": "d90963a4f028df8a",
-    "type": "tab",
-    "label": "Full IoT Sensor Dashboard",
-    "disabled": false,
-    "info": "Complete flow: Random sensor data + MQTT + Full Dashboard with manual button"
-  },
-  {
-    "id": "08a03b7393e89407",
-    "type": "inject",
-    "z": "d90963a4f028df8a",
-    "name": "Auto every 1 min",
-    "props": [{"p":"payload"}],
-    "repeat": "60",
-    "once": true,
-    "onceDelay": "1",
-    "topic": "",
-    "x": 170,
-    "y": 180,
-    "wires": [["c34b7d24d661d14a"]]
-  },
-  {
-    "id": "c34b7d24d661d14a",
-    "type": "function",
-    "z": "d90963a4f028df8a",
-    "name": "Generate Random Sensor Data",
-    "func": "let temperature = (Math.random() * 10 + 25).toFixed(2); // 25–35 °C\nlet humidity = (Math.random() * 40 + 40).toFixed(2);    // 40–80 %\nlet light = (Math.random() * 500 + 300).toFixed(2);      // 300–800 lx\n\nlet data = {\n    temperature: Number(temperature),\n    humidity: Number(humidity),\n    light: Number(light),\n    timestamp: new Date().toLocaleString()\n};\n\nnode.status({fill:\"green\",shape:\"dot\",text:`T:${temperature}°C H:${humidity}% L:${light}lx`});\nmsg.payload = data;\nreturn msg;",
-    "outputs": 1,
-    "noerr": 0,
-    "x": 420,
-    "y": 180,
-    "wires": [["d88e801d1f9f5cfa", "2a3b9f82e9e97c2a", "05499b431ca7cd1a", "78a9887c7d3a1180", "3729317c84b7e1c0", "936c812f7a152b6c"]]
-  },
-  {
-    "id": "d88e801d1f9f5cfa",
-    "type": "mqtt out",
-    "z": "d90963a4f028df8a",
-    "name": "Publish to MQTT Broker",
-    "topic": "spu/iot/sensorData",
-    "qos": "0",
-    "retain": "",
-    "broker": "246cd04875d9158f",
-    "x": 720,
-    "y": 180,
-    "wires": []
-  },
-  {
-    "id": "2a3b9f82e9e97c2a",
-    "type": "debug",
-    "z": "d90963a4f028df8a",
-    "name": "Debug Output",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "payload",
-    "targetType": "msg",
-    "x": 740,
-    "y": 240,
-    "wires": []
-  },
-  {
-    "id": "05499b431ca7cd1a",
-    "type": "ui_chart",
-    "z": "d90963a4f028df8a",
-    "name": "Chart - Temp / Hum / Light",
-    "group": "d5284fd870c4e3cb",
-    "order": 1,
-    "width": "12",
-    "height": "6",
-    "label": "Sensor Data Chart",
-    "chartType": "line",
-    "legend": "true",
-    "xformat": "HH:mm:ss",
-    "interpolate": "linear",
-    "nodata": "Waiting for data...",
-    "dot": false,
-    "ymin": "0",
-    "ymax": "1000",
-    "removeOlder": "1",
-    "removeOlderUnit": "3600",
-    "outputs": 1,
-    "useOneColor": false,
-    "useUTC": false,
-    "colors": ["#ff0000", "#00bfff", "#ffff00"],
-    "useOldStyle": false,
-    "x": 740,
-    "y": 300,
-    "wires": [[]]
-  },
-  {
-    "id": "78a9887c7d3a1180",
-    "type": "ui_gauge",
-    "z": "d90963a4f028df8a",
-    "name": "Temperature Gauge",
-    "group": "d5284fd870c4e3cb",
-    "order": 2,
-    "width": "4",
-    "height": "4",
-    "gtype": "donut",
-    "title": "Temperature (°C)",
-    "label": "°C",
-    "format": "{{msg.payload.temperature}}",
-    "min": "0",
-    "max": "50",
-    "x": 740,
-    "y": 360,
-    "wires": []
-  },
-  {
-    "id": "3729317c84b7e1c0",
-    "type": "ui_gauge",
-    "z": "d90963a4f028df8a",
-    "name": "Humidity Gauge",
-    "group": "d5284fd870c4e3cb",
-    "order": 3,
-    "width": "4",
-    "height": "4",
-    "gtype": "donut",
-    "title": "Humidity (%)",
-    "label": "%",
-    "format": "{{msg.payload.humidity}}",
-    "min": "0",
-    "max": "100",
-    "x": 740,
-    "y": 420,
-    "wires": []
-  },
-  {
-    "id": "936c812f7a152b6c",
-    "type": "ui_gauge",
-    "z": "d90963a4f028df8a",
-    "name": "Light Gauge",
-    "group": "d5284fd870c4e3cb",
-    "order": 4,
-    "width": "4",
-    "height": "4",
-    "gtype": "donut",
-    "title": "Light (lx)",
-    "label": "lx",
-    "format": "{{msg.payload.light}}",
-    "min": "0",
-    "max": "1000",
-    "x": 740,
-    "y": 480,
-    "wires": []
-  },
-  {
-    "id": "d9150efac3ccfdf4",
-    "type": "ui_button",
-    "z": "d90963a4f028df8a",
-    "name": "Manual Trigger Button",
-    "group": "d5284fd870c4e3cb",
-    "order": 5,
-    "width": "4",
-    "height": "1",
-    "passthru": false,
-    "label": "Generate Random Data",
-    "tooltip": "Click to simulate sensor data manually",
-    "color": "",
-    "bgcolor": "",
-    "className": "",
-    "icon": "play_circle_outline",
-    "payload": "",
-    "topic": "",
-    "x": 190,
-    "y": 240,
-    "wires": [["c34b7d24d661d14a"]]
-  },
-  {
-    "id": "246cd04875d9158f",
-    "type": "mqtt-broker",
-    "name": "Public MQTT Broker",
-    "broker": "test.mosquitto.org",
-    "port": "1883",
-    "clientid": "",
-    "autoConnect": true,
-    "usetls": false,
-    "protocolVersion": "4",
-    "keepalive": "60",
-    "cleansession": true
-  },
-  {
-    "id": "d5284fd870c4e3cb",
-    "type": "ui_group",
-    "name": "Sensor Dashboard",
-    "tab": "183fcd62d6d6915f",
-    "order": 1,
-    "disp": true,
-    "width": "12",
-    "collapse": false
-  },
-  {
-    "id": "183fcd62d6d6915f",
-    "type": "ui_tab",
-    "name": "IoT Sensor Panel",
-    "icon": "dashboard",
-    "disabled": false,
-    "hidden": false
-  }
-]
+getent group devops
+ls -ld /srv/team
+ls -l /srv/team
 
